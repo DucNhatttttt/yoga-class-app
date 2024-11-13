@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "994687848440",
+    "firebase_url": "https://yoga-class-app-8cc61-default-rtdb.firebaseio.com",
+    "project_id": "yoga-class-app-8cc61",
+    "storage_bucket": "yoga-class-app-8cc61.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:994687848440:android:d414e554e4c50e889bd00d",
+        "android_client_info": {
+          "package_name": "com.example.yoga_class_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyClLurlEM48CyeugwfRyYCO18j7MDlOGJw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:994687848440:android:d9ade93d5e9f260c9bd00d",
+        "android_client_info": {
+          "package_name": "com.example.yoga_class_app_coursework"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyClLurlEM48CyeugwfRyYCO18j7MDlOGJw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
