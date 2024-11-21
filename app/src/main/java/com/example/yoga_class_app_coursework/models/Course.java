@@ -14,12 +14,12 @@ public class Course {
     public Course() {
     }
 
-    public Course(String id, String dayOfWeek, String timeOfCourse, int duration, int capacity, float pricePerClass, String typeOfClass, String description) {
+    public Course(String id, String dayOfWeek, String timeOfCourse, int capacity, int duration, float pricePerClass, String typeOfClass, String description) {
         this.id = id;
         this.dayOfWeek = dayOfWeek;
         this.timeOfCourse = timeOfCourse;
-        this.duration = duration;
         this.capacity = capacity;
+        this.duration = duration;
         this.pricePerClass = pricePerClass;
         this.typeOfClass = typeOfClass;
         this.description = description;

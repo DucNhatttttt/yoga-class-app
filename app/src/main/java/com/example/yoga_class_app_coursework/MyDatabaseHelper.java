@@ -117,7 +117,7 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         long result = db.insert(TABLE_NAME_COURSE, null, cv);
         if (result != -1) {
             // Đồng bộ với Firebase
-            databaseCourseRef.child(course.getId()).setValue(course);
+                databaseCourseRef.child(course.getId()).setValue(course);
             Toast.makeText(context, "Added Successfully!", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(context, "Failed", Toast.LENGTH_SHORT).show();
@@ -126,15 +126,40 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
 
 
 
-    public Cursor readAllDataCourse(){
+    public Cursor readAllDataCourse() {
+        // Đồng bộ dữ liệu từ Firebase
+        databaseCourseRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                SQLiteDatabase db = getWritableDatabase();
+                db.execSQL("DELETE FROM " + TABLE_NAME_COURSE); // Xóa dữ liệu cũ trong SQLite
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Course course = snapshot.getValue(Course.class);
+                    if (course != null) {
+                        ContentValues cv = new ContentValues();
+                        cv.put(COLUMN_ID, course.getId());
+                        cv.put(COLUMN_DOW, course.getDayOfWeek());
+                        cv.put(COLUMN_TIMEOFCOURSE, course.getTimeOfCourse());
+                        cv.put(COLUMN_CAPACITY, course.getCapacity());
+                        cv.put(COLUMN_DURATION, course.getDuration());
+                        cv.put(COLUMN_PPC, course.getPricePerClass());
+                        cv.put(COLUMN_TYPEOFCLASS, course.getTypeOfClass());
+                        cv.put(COLUMN_DESCRIPTION, course.getDescription());
+                        db.insert(TABLE_NAME_COURSE, null, cv); // Lưu dữ liệu vào SQLite
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e("Firebase", "Failed to sync courses: " + databaseError.getMessage());
+            }
+        });
+
+        // Trả về dữ liệu từ SQLite
         String query = "SELECT * FROM " + TABLE_NAME_COURSE;
         SQLiteDatabase db = this.getReadableDatabase();
-
-        Cursor cursor = null;
-        if (db != null){
-            cursor = db.rawQuery(query, null);
-        }
-        return cursor;
+        return db.rawQuery(query, null);
     }
 
     // Cập nhật Course trong SQLite và Firebase
@@ -241,15 +266,37 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
     }
 
 
-    public Cursor readAllDataClass(){
+    public Cursor readAllDataClass() {
+        // Đồng bộ dữ liệu từ Firebase
+        databaseClassRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                SQLiteDatabase db = getWritableDatabase();
+                db.execSQL("DELETE FROM " + TABLE_NAME_CLASS); // Xóa dữ liệu cũ trong SQLite
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Class cl = snapshot.getValue(Class.class);
+                    if (cl != null) {
+                        ContentValues cv = new ContentValues();
+                        cv.put(COLUMN_CID, cl.getId());
+                        cv.put(COLUMN_TEACHER, cl.getTeacher());
+                        cv.put(COLUMN_DATE, cl.getDate());
+                        cv.put(COLUMN_CCOMMENT, cl.getComment());
+                        cv.put(COLUMN_COURSE_ID, cl.getCourse_id());
+                        db.insert(TABLE_NAME_CLASS, null, cv); // Lưu dữ liệu vào SQLite
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e("Firebase", "Failed to sync classes: " + databaseError.getMessage());
+            }
+        });
+
+        // Trả về dữ liệu từ SQLite
         String query = "SELECT * FROM " + TABLE_NAME_CLASS;
         SQLiteDatabase db = this.getReadableDatabase();
-
-        Cursor cursor = null;
-        if (db != null){
-            cursor = db.rawQuery(query, null);
-        }
-        return cursor;
+        return db.rawQuery(query, null);
     }
 
     // Cập nhật Class trong SQLite và Firebase

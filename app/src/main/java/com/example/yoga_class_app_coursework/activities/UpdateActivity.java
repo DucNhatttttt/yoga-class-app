@@ -14,6 +14,7 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,20 +24,24 @@ import com.example.yoga_class_app_coursework.MyDatabaseHelper;
 import com.example.yoga_class_app_coursework.R;
 import com.example.yoga_class_app_coursework.models.Course;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 
 public class UpdateActivity extends AppCompatActivity {
     EditText timeRangeEditText_up, capacity_edt_up, duration_edt_up, ppc_edt_up, des_edt_up;
-    Spinner dow_spinner_up;
     RadioGroup rg_up;
     RadioButton fy_rb_up;
     RadioButton ay_rb_up;
     RadioButton fay_rb_up;
     Button update_btn_in, back_btn;
+    TextView dow_selector_txt_up;
     String id, dayOfWeek, timeOfCourse, typeOfClass, description;
     int capacity, duration;
     float pricePerClass;
     private int startHour, startMinute, endHour, endMinute;
+    private boolean[] selectedDays; // Mảng lưu trạng thái chọn ngày
+    private ArrayList<String> selectedDaysList; // Danh sách ngày đã chọn
+    private final String[] daysOfWeek = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
 
 
     @Override
@@ -48,7 +53,9 @@ public class UpdateActivity extends AppCompatActivity {
         duration_edt_up = findViewById(R.id.duration_edt_up);
         ppc_edt_up = findViewById(R.id.ppc_edt_up);
         des_edt_up = findViewById(R.id.des_edt_up);
-        dow_spinner_up = findViewById(R.id.dow_spinner_up);
+        dow_selector_txt_up = findViewById(R.id.dow_selector_txt_up);
+        selectedDays = new boolean[daysOfWeek.length];
+        selectedDaysList = new ArrayList<>();
         rg_up = findViewById(R.id.rg_up);
         fy_rb_up = findViewById(R.id.fy_rb_up);
         ay_rb_up = findViewById(R.id.ay_rb_up);
@@ -62,12 +69,38 @@ public class UpdateActivity extends AppCompatActivity {
         // Khi nhấn vào EditText, sẽ mở TimePicker để chọn giờ bắt đầu và kết thúc
         timeRangeEditText_up.setOnClickListener(v -> showStartTimePicker());
 
+        dow_selector_txt_up.setOnClickListener(v -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(UpdateActivity.this);
+            builder.setTitle("Select Days of the Week");
+            builder.setMultiChoiceItems(daysOfWeek, selectedDays, (dialog, which, isChecked) -> {
+                if (isChecked) {
+                    if (!selectedDaysList.contains(daysOfWeek[which])) {
+                        selectedDaysList.add(daysOfWeek[which]);
+                    }
+                } else {
+                    selectedDaysList.remove(daysOfWeek[which]);
+                }
+            });
+
+            builder.setPositiveButton("OK", (dialog, which) -> {
+                if (!selectedDaysList.isEmpty()) {
+                    dow_selector_txt_up.setText(String.join(", ", selectedDaysList));
+                } else {
+                    dow_selector_txt_up.setText("Click here to select days");
+                }
+            });
+
+            builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+
+            builder.create().show();
+        });
+
         back_btn.setOnClickListener(view -> finish());
         update_btn_in.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 MyDatabaseHelper myDB = new MyDatabaseHelper(UpdateActivity.this);
-                dayOfWeek = dow_spinner_up.getSelectedItem().toString().trim();
+                dayOfWeek = dow_selector_txt_up.getText().toString();
                 capacity = Integer.parseInt(capacity_edt_up.getText().toString().trim());
                 duration = Integer.parseInt(duration_edt_up.getText().toString().trim());
                 pricePerClass = Float.parseFloat(ppc_edt_up.getText().toString().trim());
@@ -78,17 +111,8 @@ public class UpdateActivity extends AppCompatActivity {
 
 
 
-                if (duration==0) {
-                    displayFillAll();
-                } else if (pricePerClass==0) {
-                    displayFillAll();
-                }else if (timeOfCourse.matches("Click here to select time of course")) {
-                    displayFillAll();
-                } else if (capacity==0) {
-                    displayFillAll();
-                } else if (dayOfWeek.matches("None")) {
-                    displayFillAll();
-                } else if (rg_up.getCheckedRadioButtonId()== -1) {
+                if (duration == 0 || pricePerClass == 0 || timeOfCourse.equals("Click here to select time of course")
+                        || capacity == 0 || dayOfWeek.equals("Click here to select days") || rg_up.getCheckedRadioButtonId() == -1) {
                     displayFillAll();
                 } else {
                     int id_btn = rg_up.getCheckedRadioButtonId();
@@ -124,6 +148,7 @@ public class UpdateActivity extends AppCompatActivity {
             capacity_edt_up.setText(capacity+"");
             duration_edt_up.setText(duration+"");
             ppc_edt_up.setText(pricePerClass+"");
+            dow_selector_txt_up.setText(dayOfWeek);
             des_edt_up.setText(description);
             if (typeOfClass.matches("Flow Yoga")){
                 fy_rb_up.setChecked(true);
@@ -133,21 +158,7 @@ public class UpdateActivity extends AppCompatActivity {
                 fay_rb_up.setChecked(true);
             }
 
-            if (dayOfWeek.matches("Monday")){
-                dow_spinner_up.setSelection(1);
-            } else if (dayOfWeek.matches("Tuesday")) {
-                dow_spinner_up.setSelection(2);
-            } else if (dayOfWeek.matches("Wednesday")) {
-                dow_spinner_up.setSelection(3);
-            } else if (dayOfWeek.matches("Thursday")) {
-                dow_spinner_up.setSelection(4);
-            } else if (dayOfWeek.matches("Friday")) {
-                dow_spinner_up.setSelection(5);
-            } else if (dayOfWeek.matches("Saturday")) {
-                dow_spinner_up.setSelection(6);
-            } else if (dayOfWeek.matches("Sunday")) {
-                dow_spinner_up.setSelection(7);
-            }
+
 
         }else {
             Toast.makeText(this, "No data", Toast.LENGTH_SHORT).show();

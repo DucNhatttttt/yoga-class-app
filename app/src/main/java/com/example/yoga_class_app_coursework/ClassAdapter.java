@@ -87,8 +87,7 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.MyViewHolder
             public void onClick(DialogInterface dialogInterface, int i) {
                 MyDatabaseHelper myDB = new MyDatabaseHelper(context);
                 myDB.deleteOneRowClass(id);
-                Intent intent = new Intent(context, MainActivity.class);
-                ((Activity)context).startActivity(intent);
+                ((Activity)context).recreate();
 
             }
         });

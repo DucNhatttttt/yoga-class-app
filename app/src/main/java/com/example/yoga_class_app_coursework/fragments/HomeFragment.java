@@ -68,6 +68,7 @@ public class HomeFragment extends Fragment {
         coursesRef = database.getReference("courses");
         //getCoursesFromFirebase();  // Get data from Firebase
         storeDataInArrays();  // Get data from SQLite
+        myDB.readAllDataClass();
 
 
         courseAdapter = new CourseAdapter(getActivity(), courses);
@@ -145,8 +146,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 myDB.deleteAllDataCourse();
-                Intent intent = new Intent(getContext(), MainActivity.class);
-                startActivity(intent);
+                getActivity().recreate();
             }
         });
         builder.setNegativeButton("No", new DialogInterface.OnClickListener() {

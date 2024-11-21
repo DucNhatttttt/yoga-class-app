@@ -9,6 +9,10 @@ public class Class {
     private String comment;
     private String course_id;
 
+    public Class(){
+
+    }
+
     public Class(String id, String teacher, String date, String comment, String course_id) {
         this.id = id;
         this.teacher = teacher;

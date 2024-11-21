@@ -17,6 +17,7 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.example.yoga_class_app_coursework.MyDatabaseHelper;
 import com.example.yoga_class_app_coursework.R;
@@ -33,18 +34,21 @@ public class AddFragment extends Fragment {
     FirebaseDatabase database;
     DatabaseReference coursesRef;
     EditText timeRangeEditText, capacity_edt, duration_edt, ppc_edt, des_edt;
-    Spinner dow_spinner;
     RadioGroup rg;
     RadioButton fy_rb;
     RadioButton ay_rb;
     RadioButton fay_rb;
     Button save_btn;
+    TextView dow_selector_txt;
     String id, dayOfWeek, timeOfCourse, typeOfClass, description;
     int capacity, duration;
     float pricePerClass;
     MyDatabaseHelper myDB;
     ArrayList<Course> courses;
     private int startHour, startMinute, endHour, endMinute;
+    private boolean[] selectedDays; // Mảng lưu trạng thái chọn ngày
+    private ArrayList<String> selectedDaysList; // Danh sách ngày đã chọn
+    private final String[] daysOfWeek = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
 
     @Nullable
     @Override
@@ -57,7 +61,9 @@ public class AddFragment extends Fragment {
         coursesRef = database.getReference("courses");
 
         // Các khai báo khác và thiết lập giao diện
-        dow_spinner = mView.findViewById(R.id.dow_spinner);
+        dow_selector_txt = mView.findViewById(R.id.dow_selector_txt);
+        selectedDays = new boolean[daysOfWeek.length];
+        selectedDaysList = new ArrayList<>();
         capacity_edt = mView.findViewById(R.id.capacity_edt);
         duration_edt = mView.findViewById(R.id.duration_edt);
         ppc_edt = mView.findViewById(R.id.ppc_edt);
@@ -75,12 +81,38 @@ public class AddFragment extends Fragment {
         // Khi nhấn vào EditText, sẽ mở TimePicker để chọn giờ bắt đầu và kết thúc
         timeRangeEditText.setOnClickListener(v -> showStartTimePicker());
 
+        dow_selector_txt.setOnClickListener(v -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle("Select Days of the Week");
+            builder.setMultiChoiceItems(daysOfWeek, selectedDays, (dialog, which, isChecked) -> {
+                if (isChecked) {
+                    if (!selectedDaysList.contains(daysOfWeek[which])) {
+                        selectedDaysList.add(daysOfWeek[which]);
+                    }
+                } else {
+                    selectedDaysList.remove(daysOfWeek[which]);
+                }
+            });
+
+            builder.setPositiveButton("OK", (dialog, which) -> {
+                if (!selectedDaysList.isEmpty()) {
+                    dow_selector_txt.setText(String.join(", ", selectedDaysList));
+                } else {
+                    dow_selector_txt.setText("Click here to select days");
+                }
+            });
+
+            builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+
+            builder.create().show();
+        });
+
         capacity_edt.setText("0");
         duration_edt.setText("0");
         ppc_edt.setText("0");
 
         save_btn.setOnClickListener(view -> {
-            dayOfWeek = dow_spinner.getSelectedItem().toString().trim();
+            dayOfWeek = dow_selector_txt.getText().toString();
             capacity = Integer.parseInt(capacity_edt.getText().toString().trim());
             duration = Integer.parseInt(duration_edt.getText().toString().trim());
             pricePerClass = Float.parseFloat(ppc_edt.getText().toString().trim());
@@ -89,7 +121,7 @@ public class AddFragment extends Fragment {
 
             // Kiểm tra điều kiện nhập dữ liệu
             if (duration == 0 || pricePerClass == 0 || timeOfCourse.equals("Click here to select time of course")
-                    || capacity == 0 || dayOfWeek.equals("None") || rg.getCheckedRadioButtonId() == -1) {
+                    || capacity == 0 || dayOfWeek.equals("Click here to select days") || rg.getCheckedRadioButtonId() == -1) {
                 displayFillAll();
             } else {
                 int id_btn = rg.getCheckedRadioButtonId();
@@ -102,31 +134,7 @@ public class AddFragment extends Fragment {
                 myDB.addCourse(course);
                 Intent intent = new Intent(getContext(), MainActivity.class);
                 startActivity(intent);
-                // Use Firebase's push key as a unique identifier for both SQLite and Firebase
-//                String courseId = coursesRef.push().getKey();
-//                if (courseId != null) {
-//                    // Create Course with generated ID
-//                    Course course = new Course(courseId, dayOfWeek, timeOfCourse, capacity, duration, pricePerClass, typeOfClass, description);
-//
-//                    // Add course to SQLite (using the same ID)
-//                    myDB.addCourse(course);
-//
-//                    // Add course to Firebase using the same ID
-//                    coursesRef.child(courseId).setValue(course)
-//                            .addOnSuccessListener(aVoid -> {
-//                                // Success - Navigate to MainActivity
-//                                Intent intent = new Intent(getContext(), MainActivity.class);
-//                                startActivity(intent);
-//                            })
-//                            .addOnFailureListener(e -> {
-//                                // Handle failure (optional)
-//                                new AlertDialog.Builder(getActivity())
-//                                        .setTitle("Firebase Sync Failed")
-//                                        .setMessage("Could not sync data to Firebase. Please try again.")
-//                                        .setNeutralButton("Close", null)
-//                                        .show();
-//                            });
-                //}
+
             }
         });
 
